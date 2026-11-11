@@ -9,7 +9,7 @@ work flow: in SADC/frontend we'll make the website where person will connect the
 ```
 frontend/   the website (Next.js): Connect Discord, Connect wallet, Verify / Unlink
 backend/    Discord sign-in, wallet signature check, NFT check, data/links.json, holder list for the bot
-../DiscordBot/holders.py   gives and takes the holder role, following the backend's list
+../DiscordBot/holders.py   gives and takes the holder roles by how many NFTs each member holds
 ```
 
 1. **Connect Discord** signs in through Discord (backend `/auth/discord`).
@@ -22,4 +22,4 @@ backend/    Discord sign-in, wallet signature check, NFT check, data/links.json,
 
 1. Backend: see [backend/README.md](backend/README.md) (Discord OAuth, Helius RPC key, collection address, Caddy on the VPS).
 2. Website: see [frontend/README.md](frontend/README.md).
-3. Bot: set `SADC_URL` and `SADC_BOT_SECRET` in `DiscordBot/.env`, restart it, then `/holdersetup role:@Holder` (see the "Holder role" part of `DiscordBot/README.md`).
+3. Bot: set `SADC_URL` and `SADC_BOT_SECRET` in `DiscordBot/.env`, restart it, then add a role per amount with `/holderroles add amount:1 role:@Holder` (see the "Holder roles" part of `DiscordBot/README.md`).

@@ -3,7 +3,8 @@
 // One Discord account has at most one wallet and one wallet belongs to at most one Discord account,
 // so nobody can use the same NFT for several accounts.
 //
-// Emits 'holders' with the Discord ids that should have the role, after it's saved and only when that list changes.
+// Emits 'holders' with the holder list for the bot (see snapshot()), after it's saved and only when it changes:
+// someone verified, unlinked, sold, bought, or holds a different number of NFTs.
 
 import { EventEmitter } from 'node:events';
 import fs from 'node:fs/promises';
@@ -25,7 +26,7 @@ export class LinkStore extends EventEmitter {
     } catch (err) {
       if (err.code !== 'ENOENT') throw new Error(`Can't read ${this.file}: ${err.message}. Fix or delete it, then start again.`);
     }
-    this.lastHolders = JSON.stringify(this.holders());
+    this.lastHolders = JSON.stringify(this.snapshot());
   }
 
   get(discordId) {
@@ -43,6 +44,12 @@ export class LinkStore extends EventEmitter {
   // The Discord ids that should have the holder role.
   holders() {
     return this.all().filter((link) => link.holds).map((link) => link.discord_id).sort();
+  }
+
+  // What the bot gets: the holders, and how many NFTs each holds (for roles that need a certain amount).
+  snapshot() {
+    const holders = this.holders();
+    return { holders, counts: Object.fromEntries(holders.map((id) => [id, this.links[id].held])) };
   }
 
   async set(link) {
@@ -68,11 +75,11 @@ export class LinkStore extends EventEmitter {
     });
     this.writing = write.catch(() => {});
     return write.then(() => {
-      const holders = this.holders();
-      const key = JSON.stringify(holders);
+      const snapshot = this.snapshot();
+      const key = JSON.stringify(snapshot);
       if (key !== this.lastHolders) {
         this.lastHolders = key;
-        this.emit('holders', holders);
+        this.emit('holders', snapshot);
       }
     });
   }

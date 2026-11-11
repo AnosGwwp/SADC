@@ -58,28 +58,35 @@ export function verifySignature(wallet, message, signature) {
   }
 }
 
+const PAGE = 1000; // the most the DAS API returns per page
+
 // How many NFTs from the collection the wallet holds right now, using the DAS API (Helius and most Solana
 // RPC providers have it). Counts normal and compressed NFTs; burnt ones and unverified collections don't count.
+// Exact, however many they hold, since roles can depend on the amount: one request, plus one per extra 1,000.
 // Throws when the RPC can't be reached or answers with an error, so a hiccup is never mistaken for "sold".
 export async function countHeld({ rpcUrl, owner, collection }) {
-  const res = await fetch(rpcUrl, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      jsonrpc: '2.0',
-      id: 'sadc',
-      method: 'searchAssets',
-      params: { ownerAddress: owner, grouping: ['collection', collection], burnt: false, page: 1, limit: 100 },
-    }),
-    signal: AbortSignal.timeout(15_000),
-  });
-  if (!res.ok) throw new Error(`Solana RPC answered ${res.status}`);
-  const body = await res.json();
-  if (body.error) throw new Error(`Solana RPC: ${body.error.message || JSON.stringify(body.error)}`);
-  const items = body.result?.items ?? [];
-  return items.filter((item) =>
-    item.ownership?.owner === owner &&
-    !item.burnt &&
-    item.grouping?.some((g) => g.group_key === 'collection' && g.group_value === collection && g.verified !== false),
-  ).length;
+  let count = 0;
+  for (let page = 1; ; page++) {
+    const res = await fetch(rpcUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 'sadc',
+        method: 'searchAssets',
+        params: { ownerAddress: owner, grouping: ['collection', collection], burnt: false, page, limit: PAGE },
+      }),
+      signal: AbortSignal.timeout(15_000),
+    });
+    if (!res.ok) throw new Error(`Solana RPC answered ${res.status}`);
+    const body = await res.json();
+    if (body.error) throw new Error(`Solana RPC: ${body.error.message || JSON.stringify(body.error)}`);
+    const items = body.result?.items ?? [];
+    count += items.filter((item) =>
+      item.ownership?.owner === owner &&
+      !item.burnt &&
+      item.grouping?.some((g) => g.group_key === 'collection' && g.group_value === collection && g.verified !== false),
+    ).length;
+    if (items.length < PAGE) return count;
+  }
 }

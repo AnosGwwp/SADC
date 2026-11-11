@@ -223,17 +223,18 @@ function botOnly(req, res, next) {
   next();
 }
 
-// Everyone who should have the holder role, as Discord ids.
+// Everyone who should have the holder role, as Discord ids, and how many NFTs each holds:
+// { holders: ["123", …], counts: { "123": 4, … } }
 app.get('/api/bot/holders', botOnly, (req, res) => {
-  res.json({ holders: links.holders() });
+  res.json(links.snapshot());
 });
 
 // The same list, sent straight away and again every time it changes (Server-Sent Events, event "holders").
 app.get('/api/bot/stream', botOnly, (req, res) => {
   res.set({ 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', Connection: 'keep-alive', 'X-Accel-Buffering': 'no' });
   res.flushHeaders();
-  const send = (holders) => res.write(`event: holders\ndata: ${JSON.stringify({ holders })}\n\n`);
-  send(links.holders());
+  const send = (snapshot) => res.write(`event: holders\ndata: ${JSON.stringify(snapshot)}\n\n`);
+  send(links.snapshot());
   links.on('holders', send);
   const keepAlive = setInterval(() => res.write(': ping\n\n'), 25_000);
   req.on('close', () => {

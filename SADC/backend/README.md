@@ -4,7 +4,7 @@ Links a Discord account to a Solana wallet, checks that the wallet holds an NFT 
 
 - **Discord sign-in:** OAuth2 with the `identify` scope only (id, name, avatar).
 - **Wallet ownership:** the person signs a short message in their wallet. That proves the wallet is theirs without a transaction or any cost. The message names the wallet and the Discord account and is only valid for 10 minutes, so a signature can't be reused for anything else.
-- **NFT check:** the DAS API (`searchAssets`) on your Solana RPC. Normal and compressed NFTs count; burnt ones and unverified collections don't.
+- **NFT check:** the DAS API (`searchAssets`) on your Solana RPC. Normal and compressed NFTs count; burnt ones and unverified collections don't. The count is exact (roles in Discord can depend on it): one request per 1,000 NFTs.
 - **One to one:** a wallet can be linked to only one Discord account and a Discord account to only one wallet. To switch, unlink first; that takes the role away.
 - **Selling:** every linked wallet is checked again every `RECHECK_MINUTES` (10). A wallet that no longer holds loses the role, and gets it back once it holds again. If the RPC is down, nobody's role changes.
 - **Saved:** every link is written to `data/links.json` before the bot is told, so a restart never loses one.
@@ -51,7 +51,7 @@ Keep `HOST=127.0.0.1` so port 2001 is only reachable through Caddy. No firewall 
 | `GET /api/message?wallet=` | The message to sign with that wallet |
 | `POST /api/verify` | `{ wallet, issued_at, signature }` (signature in base64). Links the wallet if everything checks out |
 | `POST /api/unlink` | Removes the link; the bot takes the role away |
-| `GET /api/bot/stream` | For the bot (`Authorization: Bearer BOT_SECRET`): the holder list, sent on connect and on every change |
+| `GET /api/bot/stream` | For the bot (`Authorization: Bearer BOT_SECRET`): `{ holders: [Discord ids], counts: { id: NFTs held } }`, sent on connect and whenever someone's holdings change |
 | `GET /api/bot/holders` | The same list, once |
 | `GET /api/health` | Links, holders and the last recheck |
 
