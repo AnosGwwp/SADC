@@ -3,3 +3,11 @@
   command = "npm run build"
   # `npm run build` writes the finished site (plain HTML, CSS and JS) to out/.
   publish = "out"
+
+# The link preview image (app/opengraph-image.js) is exported without a file extension, so tell browsers
+# and Discord it's a PNG. Without this Netlify can't tell what it is.
+[[headers]]
+  for = "/opengraph-image"
+  [headers.values]
+    Content-Type = "image/png"
+    Cache-Control = "public, max-age=86400"
