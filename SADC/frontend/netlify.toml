@@ -1,0 +1,5 @@
+# Netlify build settings. Set the base directory to SADC/frontend in Netlify; the paths here are relative to it.
+[build]
+  command = "npm run build"
+  # `npm run build` writes the finished site (plain HTML, CSS and JS) to out/.
+  publish = "out"

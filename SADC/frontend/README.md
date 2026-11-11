@@ -18,7 +18,7 @@ The backend's `FRONTEND_URL` must be this site's address, so Discord sends peopl
 
 `npm run build` makes plain files in `out/`. Any static host works:
 
-- **Netlify:** base directory `SADC/frontend`, build command `npm run build`, publish directory `out`. Add `NEXT_PUBLIC_API_URL` under environment variables, plus `SECRETS_SCAN_OMIT_KEYS=NEXT_PUBLIC_API_URL` so Netlify's secret scan doesn't block the deploy (the address is public on purpose).
+- **Netlify:** base directory `SADC/frontend`. The build command and publish directory come from `netlify.toml`. Add `NEXT_PUBLIC_API_URL` under environment variables, plus `SECRETS_SCAN_OMIT_KEYS=NEXT_PUBLIC_API_URL` so Netlify's secret scan doesn't block the deploy (the address is public on purpose).
 - **The VPS:** copy `out/` there and serve it from Caddy with `file_server`.
 
 Then set the backend's `FRONTEND_URL` to the published address and restart it.
