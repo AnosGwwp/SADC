@@ -1,0 +1,19 @@
+{
+  "name": "sadc-backend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Links a Discord account to a Solana wallet, checks it holds an NFT from the collection, and tells the Discord bot who gets the holder role",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "cors": "^2.8.6",
+    "express": "^5.3.0"
+  }
+}
